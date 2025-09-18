@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+      POSTGRES_DB: ${DB_DATABASE:-hotel_db}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - PORT=${PORT:-3001}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-1234}
+      - DB_DATABASE=${DB_DATABASE:-hotel_db}
+      - DB_SYNCHRONIZE=${DB_SYNCHRONIZE:-true}
+      - NODE_ENV=production
+    ports:
+      - "3001:3001"
+    command: ["node", "dist/main.js"]
+
+volumes:
+  db_data:
